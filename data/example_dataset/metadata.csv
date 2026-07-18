@@ -1,0 +1,9 @@
+sample_id,condition,replicate
+control_1,control,1
+control_2,control,2
+control_3,control,3
+control_4,control,4
+stress_1,stress,1
+stress_2,stress,2
+stress_3,stress,3
+stress_4,stress,4
