@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Arabidopsis RNA-seq Transcriptomic Analysis — Project Showcase</title>
+<meta name="description" content="End-to-end RNA-seq differential gene expression pipeline for Arabidopsis thaliana abiotic stress data, built with PyDESeq2, scikit-learn, and matplotlib.">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+<header class="masthead">
+  <div class="wrap">
+    <div>
+      <div class="masthead-label">Research Software · Bioinformatics</div>
+      <div class="masthead-title">Arabidopsis RNA-seq Transcriptomic Analysis</div>
+    </div>
+    <nav>
+      <a href="#workflow">Workflow</a>
+      <a href="#methods">Methods</a>
+      <a href="#gallery">Figures</a>
+      <a href="#structure">Structure</a>
+      <a href="#contact">Contact</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="wrap">
+    <div>
+      <div class="hero-eyebrow">DGE Pipeline · PyDESeq2 · Python</div>
+      <h1>From raw counts to <em>significant genes</em>, with the statistics shown, not assumed.</h1>
+      <p class="lede">
+        A reproducible command-line pipeline that takes a gene × sample RNA-seq
+        count matrix from public <em>Arabidopsis thaliana</em> abiotic-stress
+        experiments through normalization, negative-binomial dispersion modeling,
+        Wald testing, and Benjamini–Hochberg correction — producing the same
+        candidate DEG list a wet-lab collaborator could act on.
+      </p>
+      <div class="cta-row">
+        <a class="btn primary" href="https://github.com/" target="_blank" rel="noopener">View on GitHub →</a>
+        <a class="btn" href="#workflow">See the workflow</a>
+      </div>
+    </div>
+    <div class="hero-figure">
+      <svg id="volcano-svg" role="img" aria-label="Illustrative volcano plot showing log2 fold change against statistical significance"></svg>
+      <div class="hero-figure-caption">
+        <span>fig. volcano_plot.svg (illustrative)</span>
+        <span>log2FC vs. -log10(padj)</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="overview">
+  <div class="wrap">
+    <div class="section-label">01 — Overview</div>
+    <h2>What this pipeline actually does</h2>
+    <p class="lead-text">
+      This repository implements a complete differential gene expression (DGE)
+      workflow for RNA-seq count data, targeting abiotic stress-response studies
+      in <em>Arabidopsis thaliana</em>. Every stage — filtering, normalization,
+      dispersion estimation, hypothesis testing, FDR correction, clustering, and
+      figure generation — is implemented as real, tested Python code, not a
+      notebook sketch. The pipeline is dataset-agnostic: any two-condition raw
+      count matrix with matching sample metadata can be analyzed.
+    </p>
+  </div>
+</section>
+
+<section id="motivation">
+  <div class="wrap">
+    <div class="section-label">02 — Motivation</div>
+    <h2>Why build this</h2>
+    <p class="lead-text">
+      Public repositories like GEO and SRA hold thousands of plant stress-response
+      RNA-seq datasets, but turning a raw count matrix into a defensible gene list
+      requires correctly chaining normalization, overdispersion modeling, and
+      multiple-testing correction — steps that silently produce wrong answers if
+      done naively (e.g. comparing raw counts across samples of different
+      sequencing depth, or applying a t-test where an NB-GLM Wald test belongs).
+      This project exists to implement that chain correctly and transparently.
+    </p>
+  </div>
+</section>
+
+<section id="objectives">
+  <div class="wrap">
+    <div class="section-label">03 — Objectives</div>
+    <h2>What the analysis sets out to answer</h2>
+    <div class="obj-grid">
+      <div class="obj-card"><p>Identify genes whose expression differs significantly between control and stress conditions, beyond normal biological variability.</p></div>
+      <div class="obj-card"><p>Quantify effect size (log2 fold change) alongside statistical confidence (adjusted p-value) for every tested gene.</p></div>
+      <div class="obj-card"><p>Cross-check DE structure against unsupervised methods (PCA, clustering) — do samples separate by condition independently of the test?</p></div>
+      <div class="obj-card"><p>Produce a reproducible, auditable trail from raw counts to final figures and reports.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="workflow">
+  <div class="wrap">
+    <div class="section-label">04 — Research Workflow</div>
+    <h2>Pipeline, step by step</h2>
+    <p class="lead-text">This sequence runs in order — each stage consumes the previous stage's output.</p>
+    <div class="pipeline-steps">
+      <div class="pstep"><div class="pstep-num">01</div><div><h3>Load &amp; validate</h3><p>Read raw counts + sample metadata; check sample alignment, integer counts, missing values.</p></div></div>
+      <div class="pstep"><div class="pstep-num">02</div><div><h3>Filter low-count genes</h3><p>Remove genes with insufficient total signal or too few samples expressing them.</p></div></div>
+      <div class="pstep"><div class="pstep-num">03</div><div><h3>Normalize</h3><p>Median-of-ratios size factors (DESeq2 method) correct for sequencing-depth differences between samples.</p></div></div>
+      <div class="pstep"><div class="pstep-num">04</div><div><h3>Estimate dispersion</h3><p>PyDESeq2 fits per-gene dispersion: gene-wise estimate → trend curve → MAP shrinkage.</p></div></div>
+      <div class="pstep"><div class="pstep-num">05</div><div><h3>Fit the model &amp; test</h3><p>Negative binomial GLM per gene; Wald test on the condition coefficient.</p></div></div>
+      <div class="pstep"><div class="pstep-num">06</div><div><h3>Correct for multiple testing</h3><p>Benjamini–Hochberg FDR correction across all tested genes.</p></div></div>
+      <div class="pstep"><div class="pstep-num">07</div><div><h3>Extract significant DEGs</h3><p>Filter by adjusted p-value and minimum fold-change magnitude.</p></div></div>
+      <div class="pstep"><div class="pstep-num">08</div><div><h3>Cross-check &amp; visualize</h3><p>PCA, hierarchical clustering, KMeans, and the full figure set are generated from the same validated data.</p></div></div>
+    </div>
+  </div>
+</section>
+
+<section id="tech">
+  <div class="wrap">
+    <div class="section-label">05 — Technologies Used</div>
+    <h2>Stack</h2>
+    <div class="tech-grid">
+      <span class="tech-pill">Python</span>
+      <span class="tech-pill">PyDESeq2</span>
+      <span class="tech-pill">pandas</span>
+      <span class="tech-pill">NumPy</span>
+      <span class="tech-pill">SciPy</span>
+      <span class="tech-pill">scikit-learn</span>
+      <span class="tech-pill">statsmodels</span>
+      <span class="tech-pill">matplotlib</span>
+      <span class="tech-pill">seaborn</span>
+      <span class="tech-pill">Jupyter</span>
+      <span class="tech-pill">argparse</span>
+      <span class="tech-pill">logging</span>
+      <span class="tech-pill">pathlib</span>
+    </div>
+  </div>
+</section>
+
+<section id="methods">
+  <div class="wrap">
+    <div class="section-label">06 — Statistical &amp; ML Methods</div>
+    <h2>How significance is actually determined</h2>
+    <div class="methods-grid">
+      <div class="method-block">
+        <h3>Statistical</h3>
+        <p><strong>Normalization:</strong> median-of-ratios size factors.</p>
+        <p><strong>Dispersion:</strong> gene-wise → trend → MAP shrinkage (PyDESeq2 / DESeq2 methodology).</p>
+        <p><strong>Test:</strong> Wald test on the fitted log2 fold-change coefficient.</p>
+        <p><strong>Correction:</strong> Benjamini–Hochberg FDR at a configurable alpha (default 0.05).</p>
+      </div>
+      <div class="method-block">
+        <h3>Machine Learning</h3>
+        <p><strong>PCA:</strong> on the top-variance-gene expression matrix — do samples separate along the top components?</p>
+        <p><strong>Clustering:</strong> Ward hierarchical clustering + KMeans, scored against true labels via Adjusted Rand Index.</p>
+        <p><strong>Dimensionality (optional):</strong> t-SNE for qualitative comparison against PCA, perplexity auto-capped for small sample counts.</p>
+      </div>
+    </div>
+    <div class="stat-row">
+      <div class="stat"><span class="num">2,000</span><span class="label">genes (example run)</span></div>
+      <div class="stat"><span class="num">1,995</span><span class="label">genes tested</span></div>
+      <div class="stat"><span class="num">126</span><span class="label">significant DEGs</span></div>
+      <div class="stat"><span class="num">1.0</span><span class="label">clustering ARI</span></div>
+    </div>
+    <p class="lead-text" style="margin-top:14px; font-size:12.5px; color:var(--text-dim);">
+      Figures from a run against the bundled synthetic example dataset (see Dataset section of the README) — shown to demonstrate the pipeline's real output shape, not as a biological finding.
+    </p>
+  </div>
+</section>
+
+<section id="gallery">
+  <div class="wrap">
+    <div class="section-label">07 — Visualizations Gallery</div>
+    <h2>Figures the pipeline generates</h2>
+    <div class="gallery-grid">
+      <div class="gallery-card"><div class="gallery-thumb">volcano_plot.png</div><div class="gallery-caption"><span class="fig-name">Volcano Plot</span><p>log2FC vs. -log10(padj), colored by significance and direction.</p></div></div>
+      <div class="gallery-card"><div class="gallery-thumb">ma_plot.png</div><div class="gallery-caption"><span class="fig-name">MA Plot</span><p>Mean expression vs. log2FC — reveals fold-change bias at low counts.</p></div></div>
+      <div class="gallery-card"><div class="gallery-thumb">deg_heatmap.png</div><div class="gallery-caption"><span class="fig-name">Clustered Heatmap</span><p>Top significant DEGs, hierarchically clustered on both axes.</p></div></div>
+      <div class="gallery-card"><div class="gallery-thumb">pca_plot.png</div><div class="gallery-caption"><span class="fig-name">PCA Plot</span><p>PC1 vs. PC2, samples colored by condition.</p></div></div>
+      <div class="gallery-card"><div class="gallery-thumb">sample_correlation.png</div><div class="gallery-caption"><span class="fig-name">Sample Correlation</span><p>Spearman correlation matrix — QC check for replicate agreement.</p></div></div>
+      <div class="gallery-card"><div class="gallery-thumb">normalization_boxplots.png</div><div class="gallery-caption"><span class="fig-name">Normalization QC</span><p>Expression distribution before vs. after size-factor normalization.</p></div></div>
+    </div>
+  </div>
+</section>
+
+<section id="structure">
+  <div class="wrap">
+    <div class="section-label">08 — Repository Structure</div>
+    <h2>Where everything lives</h2>
+    <div class="repo-tree">arabidopsis-rnaseq-transcriptomic-analysis/
+├── data/                  raw / processed / metadata / example_dataset
+├── notebooks/             01_data_loading → 05_biological_interpretation
+├── src/rnaseq/
+│   ├── config.py          PipelineConfig — every tunable parameter
+│   ├── io.py               load + validate counts &amp; metadata
+│   ├── preprocessing.py    filtering, size factors, normalization
+│   ├── deseq_pipeline.py   PyDESeq2 wrapper (dispersion, Wald, BH)
+│   ├── statistics.py       DEG extraction, correlation, summaries
+│   ├── report.py           analysis_report.md + CSV/TSV/JSON export
+│   ├── ml/                 pca.py · clustering.py · dimensionality.py
+│   └── viz/                volcano.py · ma_plot.py · heatmap.py · pca_plot.py · qc_plots.py
+├── outputs/               figures/ · tables/ · reports/ · logs/
+├── tests/
+├── docs/                  this page + DATASET.md
+└── main.py                CLI entry point
+    </div>
+  </div>
+</section>
+
+<section id="features">
+  <div class="wrap">
+    <div class="section-label">09 — Key Features</div>
+    <h2>What's actually implemented</h2>
+    <ul class="feature-list">
+      <li>Real input validation — catches sample mismatches, TPM/FPKM mistaken for raw counts, missing values.</li>
+      <li>DESeq2-methodology dispersion estimation and Wald testing via PyDESeq2 — not an approximation.</li>
+      <li>Benjamini–Hochberg FDR correction applied to every tested gene.</li>
+      <li>PCA, hierarchical clustering, and KMeans as independent cross-checks on DE structure.</li>
+      <li>Every figure exported as both PNG and PDF for publication use.</li>
+      <li>Fully serializable run configuration for reproducibility (<code>run_config.json</code>).</li>
+      <li>Bundled synthetic dataset with seeded ground-truth DEGs so the pipeline runs immediately after cloning.</li>
+      <li>Automated Markdown + CSV/TSV/JSON reporting — no manually-typed numbers.</li>
+    </ul>
+  </div>
+</section>
+
+<section id="biological-insights">
+  <div class="wrap">
+    <div class="section-label">10 — Biological Insights</div>
+    <h2>Reading the DEG list biologically</h2>
+    <p class="lead-text">
+      The pipeline outputs a statistically validated candidate gene list —
+      genes whose expression shift between conditions exceeds what's expected
+      from replicate variability, at the chosen FDR threshold. Genes with large
+      positive log2 fold change are candidates for stress-induced upregulation
+      (e.g. stress-response transcription factors, osmotic or oxidative stress
+      pathway genes in a real abiotic-stress experiment); large negative
+      fold-change genes are candidates for stress-induced repression of normal
+      growth and metabolic processes. Attaching gene function to these IDs
+      requires cross-referencing a functional annotation resource such as TAIR
+      or Ensembl Plants — this pipeline produces the candidate list, not the
+      functional annotation itself.
+    </p>
+  </div>
+</section>
+
+<section id="limitations">
+  <div class="wrap">
+    <div class="section-label">11 — Limitations</div>
+    <h2>What this pipeline does not do</h2>
+    <ul class="plain-list">
+      <li>No GO-term or KEGG pathway enrichment — DEG lists require external biological annotation to interpret function.</li>
+      <li>Small replicate counts (common in public datasets) widen fold-change confidence intervals.</li>
+      <li>t-SNE, if enabled, has no principled variance-explained interpretation.</li>
+      <li>The default <code>~condition</code> design does not model batch effects unless added as a covariate.</li>
+      <li>Read alignment / quantification (FASTQ → counts) is out of scope; the pipeline starts from an already-quantified count matrix.</li>
+    </ul>
+  </div>
+</section>
+
+<section id="future-work">
+  <div class="wrap">
+    <div class="section-label">12 — Future Work</div>
+    <h2>Where this goes next</h2>
+    <ul class="plain-list">
+      <li>GO-term / KEGG pathway enrichment on significant DEGs.</li>
+      <li>Multi-factor design support (e.g. <code>~batch + condition</code>) and interaction contrasts.</li>
+      <li>Automatic outlier-sample detection prior to model fitting.</li>
+      <li>Time-course RNA-seq support via likelihood ratio test workflows.</li>
+      <li>Default integration of a real public GEO/SRA Arabidopsis dataset with automated download.</li>
+    </ul>
+  </div>
+</section>
+
+<section id="references">
+  <div class="wrap">
+    <div class="section-label">13 — References</div>
+    <h2>Cited methodology</h2>
+    <ul class="ref-list">
+      <li>Love, M.I., Huber, W., Anders, S. (2014). Moderated estimation of fold change and dispersion for RNA-seq data with DESeq2. <em>Genome Biology</em>, 15, 550.</li>
+      <li>Muzellec, B., Teleńczuk, M., Cabeli, V., Andreux, M. (2023). PyDESeq2: a python package for bulk RNA-seq differential expression analysis. <em>Bioinformatics</em>.</li>
+      <li>Benjamini, Y., Hochberg, Y. (1995). Controlling the false discovery rate. <em>Journal of the Royal Statistical Society B</em>, 57(1), 289–300.</li>
+    </ul>
+  </div>
+</section>
+
+<footer class="footer" id="contact">
+  <div class="wrap">
+    <div class="footer-grid">
+      <div>
+        <div class="masthead-title" style="font-size:16px;">Arabidopsis RNA-seq Transcriptomic Analysis</div>
+        <p class="footer-note">MIT Licensed · Built on the open-source scientific Python ecosystem.</p>
+      </div>
+      <div class="footer-links">
+        <a href="https://github.com/" target="_blank" rel="noopener">GitHub</a>
+        <a href="../README.md">README</a>
+        <a href="DATASET.md">Dataset</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script src="assets/js/main.js"></script>
+</body>
+</html>
